@@ -15,6 +15,7 @@ def get_current_quote():
             if row['time'] == current_time:
                 time_string = row['time_string']
                 quote_with_color = row['quote'].replace(time_string, '\033[32m{}\033[0m'.format(time_string))
+                quote_with_color = quote_with_color.replace('<br/>','\n')
                 suitable_quote = '{q}\n\t - {t}, {a}'.format(q = quote_with_color, t = row['title'], a = row['author'])
                 suitable_quotes.append(suitable_quote)
 
