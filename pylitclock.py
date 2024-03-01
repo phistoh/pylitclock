@@ -2,6 +2,7 @@ from datetime import datetime
 import csv
 import random
 import os
+import textwrap
 
 def get_current_quote():
     now = datetime.now()
@@ -15,8 +16,9 @@ def get_current_quote():
             if row['time'] == current_time:
                 time_string = row['time_string']
                 quote_with_color = row['quote'].replace(time_string, '\033[33m{}\033[0m'.format(time_string))
-                quote_with_color = quote_with_color.replace('<br/>','\n')
-                suitable_quote = '{q}\n\t - {t}, {a}'.format(q = quote_with_color, t = row['title'], a = row['author'])
+                quote_with_color = textwrap.fill(quote_with_color.replace('<br/>','\n'), width=72, initial_indent=' ' * 4, subsequent_indent=' ' * 4)
+                caption = ('- {t}, {a}'.format(q = quote_with_color, t = row['title'], a = row['author'])).rjust(68)
+                suitable_quote = '\n{q}\n\n{c}'.format(q = quote_with_color, c = caption)
                 suitable_quotes.append(suitable_quote)
 
     quote = ''
