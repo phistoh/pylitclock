@@ -1,42 +1,60 @@
 from datetime import datetime
-import csv
 import random
 import os
 import textwrap
+import json
 
-def get_current_quote():
+def get_quote_from_file():
+    # json files from https://github.com/JohannesNE/literature-clock
     now = datetime.now()
-    current_time = now.strftime('%H:%M')
-    suitable_quotes = []
-
-    # quotes from https://github.com/lbngoc/literature-clock/blob/master/litclock_annotated.csv
+    current_time = now.strftime('%H_%M.json')
     dirname = os.path.dirname(__file__)
-    quotes_file = os.path.join(dirname, 'quotes.csv')
-    with open(quotes_file, newline='', encoding='utf-8') as csvfile:
-        quote_reader = csv.DictReader(csvfile, fieldnames=['time','time_string','quote','title','author','sfw'], delimiter='|')
-        for row in quote_reader:
-            if row['time'] == current_time:
-                time_string = row['time_string']
-                quote_with_color = row['quote'].replace(time_string, '\033[33m{}\033[0m'.format(time_string))
-                quote_with_color = textwrap.fill(quote_with_color.replace('<br/>','\n'), width=72, initial_indent=' ' * 4, subsequent_indent=' ' * 4)
-                caption = ('- {t}, {a}'.format(q = quote_with_color, t = row['title'], a = row['author'])).rjust(68)
-                suitable_quote = '\n{q}\n\n{c}'.format(q = quote_with_color, c = caption)
-                suitable_quotes.append(suitable_quote)
-
-    quote = ''
-    if len(suitable_quotes) != 0:
-        quote = random.choice(suitable_quotes)
+    quotes_file = os.path.join(dirname, 'quotes', current_time)
+    annotated_quote = {}
+    if os.path.isfile(quotes_file):
+        with open(quotes_file, encoding="utf8") as quote_json:
+            annotated_quote = json.load(quote_json)[0]
     else:
-        no_time_quote = ('“What time is it?’\n'
-        '‘Whatever time you want it to be,’ she gave him a cheeky wink. ‘Now be honest, did you ask for free will?’\n'
+        annotated_quote['quote_first'] = '“What time is it?’\n‘'
+        annotated_quote['quote_time_case'] = 'Whatever time you want it to be'
+        annotated_quote['quote_last'] = (',’ she gave him a cheeky wink. ‘Now be honest, did you ask for free will?’\n'
         '‘How did you—?’\n'
         'Amanita joined Mario beneath the covers. The ethereal Threads tethering her wrists phased through the thick wool blankets like sunlight through a windowpane.\n'
         '‘The bird that acknowledges its cage only ever sings of freedom,’ she said dreamily.”')
-        no_time_quote = textwrap.fill(no_time_quote, width=72, initial_indent=' ' * 4, subsequent_indent=' ' * 4)
-        caption = ('- {t}, {a}'.format(q = no_time_quote, t = 'The Underworld Rhapsody', a = 'Louise Blackwick')).rjust(68)
-        quote = '\n{q}\n\n{c}'.format(q = no_time_quote, c = caption)
-    return quote
+        annotated_quote['author'] = 'Louise Blackwick'
+        annotated_quote['title'] = 'The Underworld Rhapsody'
+        annotated_quote['time'] = None
+        
+    return annotated_quote
+
+def format_quote(annotated_quote):
+    formatted_quote = annotated_quote.get('quote_first', '')
+    
+    # color time in quote
+    if annotated_quote.get('quote_time_case', None) is not None:
+        time_string = annotated_quote.get('quote_time_case', None)
+        formatted_quote = formatted_quote + '\033[33m{t}\033[0m'.format(t = time_string)
+    if annotated_quote.get('quote_last', None) is not None:
+        time_string = annotated_quote.get('quote_last', None)
+        formatted_quote = formatted_quote + annotated_quote.get('quote_last', None)
+    formatted_quote = formatted_quote.replace('<br/>', '\n')
+    
+    # limit line lengths and keep existing new lines
+    formatted_quote_lines = formatted_quote.splitlines()
+    formatted_quote = "\n".join([
+        textwrap.fill(l, width=72, initial_indent=' ' * 4, subsequent_indent=' ' * 4, replace_whitespace=False) for l in formatted_quote_lines
+    ])
+    
+    # generate caption
+    if annotated_quote.get('title', None) is not None:
+        caption = ('- {t}, {a}'.format(t = annotated_quote.get('title', ''), a = annotated_quote.get('author', ''))).rjust(68)
+    else:
+        caption = ('- {a}'.format(a = annotated_quote.get('author', 'Unknown'))).rjust(68)
+    formatted_quote = '\n{q}\n\n{c}'.format(q = formatted_quote, c = caption)
+    
+    return formatted_quote
 
 if __name__ == "__main__":
     os.system('')
-    print(get_current_quote())
+    quote = get_quote_from_file()
+    print(format_quote(quote))
