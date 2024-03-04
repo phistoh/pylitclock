@@ -10,7 +10,9 @@ def get_current_quote():
     suitable_quotes = []
 
     # quotes from https://github.com/lbngoc/literature-clock/blob/master/litclock_annotated.csv
-    with open('quotes.csv', newline='', encoding='utf-8') as csvfile:
+    dirname = os.path.dirname(__file__)
+    quotes_file = os.path.join(dirname, 'quotes.csv')
+    with open(quotes_file, newline='', encoding='utf-8') as csvfile:
         quote_reader = csv.DictReader(csvfile, fieldnames=['time','time_string','quote','title','author','sfw'], delimiter='|')
         for row in quote_reader:
             if row['time'] == current_time:
