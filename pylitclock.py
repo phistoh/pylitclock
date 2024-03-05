@@ -4,6 +4,21 @@ import os
 import textwrap
 import json
 
+def random_ansi_color(str):
+    random.seed(str)
+    r = random.randrange(255)
+    g = random.randrange(255)
+    b = random.randrange(255)
+    while r < 100 and g < 100 and b < 100:
+        r = random.randrange(255)
+        g = random.randrange(255)
+        b = random.randrange(255)
+        
+    ansi_color = '\033[38;2;{R};{G};{B}m'.format(R = r, B = b, G = g)
+    
+    colored_string = ansi_color + str + '\033[0m'
+    return colored_string
+
 def get_quote_from_file():
     # json files from https://github.com/JohannesNE/literature-clock
     now = datetime.now()
@@ -33,7 +48,7 @@ def format_quote(annotated_quote):
     # color time in quote
     if annotated_quote.get('quote_time_case', None) is not None:
         time_string = annotated_quote.get('quote_time_case', None)
-        formatted_quote = formatted_quote + '\033[33m{t}\033[0m'.format(t = time_string)
+        formatted_quote = formatted_quote + '{t}'.format(t = random_ansi_color(time_string))
     if annotated_quote.get('quote_last', None) is not None:
         time_string = annotated_quote.get('quote_last', None)
         formatted_quote = formatted_quote + annotated_quote.get('quote_last', None)
@@ -47,7 +62,7 @@ def format_quote(annotated_quote):
     
     # generate caption
     if annotated_quote.get('title', None) is not None:
-        caption = ('- {t}, {a}'.format(t = annotated_quote.get('title', ''), a = annotated_quote.get('author', ''))).rjust(68)
+        caption = ('- \033[3m{t}\033[23m, {a}'.format(t = annotated_quote.get('title', ''), a = annotated_quote.get('author', ''))).rjust(68)
     else:
         caption = ('- {a}'.format(a = annotated_quote.get('author', 'Unknown'))).rjust(68)
     formatted_quote = '\n{q}\n\n{c}'.format(q = formatted_quote, c = caption)
