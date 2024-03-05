@@ -6,14 +6,12 @@ import json
 
 def random_ansi_color(str):
     random.seed(str)
-    r = random.randrange(255)
-    g = random.randrange(255)
-    b = random.randrange(255)
-    while r < 100 and g < 100 and b < 100:
-        r = random.randrange(255)
-        g = random.randrange(255)
-        b = random.randrange(255)
-        
+    c_1 = random.randrange(0, 100)
+    c_2 = random.randrange(100, 255)
+    c_3 = random.randrange(0, 255)
+    C = [c_1, c_2, c_3]
+    random.shuffle(C)
+    r,g,b = C
     ansi_color = '\033[38;2;{R};{G};{B}m'.format(R = r, B = b, G = g)
     
     colored_string = ansi_color + str + '\033[0m'
