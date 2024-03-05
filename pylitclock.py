@@ -13,9 +13,8 @@ def random_ansi_color(str):
     random.shuffle(C)
     r,g,b = C
     ansi_color = '\033[38;2;{R};{G};{B}m'.format(R = r, B = b, G = g)
-    
-    colored_string = ansi_color + str + '\033[0m'
-    return colored_string
+
+    return ansi_color
 
 def get_quote_from_file():
     # json files from https://github.com/JohannesNE/literature-clock
@@ -26,7 +25,7 @@ def get_quote_from_file():
     annotated_quote = {}
     if os.path.isfile(quotes_file):
         with open(quotes_file, encoding="utf8") as quote_json:
-            annotated_quote = json.load(quote_json)[0]
+            annotated_quote = random.choice(json.load(quote_json))
     else:
         annotated_quote['quote_first'] = '“What time is it?’\n‘'
         annotated_quote['quote_time_case'] = 'Whatever time you want it to be'
@@ -46,7 +45,7 @@ def format_quote(annotated_quote):
     # color time in quote
     if annotated_quote.get('quote_time_case', None) is not None:
         time_string = annotated_quote.get('quote_time_case', None)
-        formatted_quote = formatted_quote + '{t}'.format(t = random_ansi_color(time_string))
+        formatted_quote = formatted_quote + '{t}'.format(t = '{%' + time_string + '%}')
     if annotated_quote.get('quote_last', None) is not None:
         time_string = annotated_quote.get('quote_last', None)
         formatted_quote = formatted_quote + annotated_quote.get('quote_last', None)
@@ -55,14 +54,17 @@ def format_quote(annotated_quote):
     # limit line lengths and keep existing new lines
     formatted_quote_lines = formatted_quote.splitlines()
     formatted_quote = "\n".join([
-        textwrap.fill(l, width=72, initial_indent=' ' * 4, subsequent_indent=' ' * 4, replace_whitespace=False) for l in formatted_quote_lines
+        textwrap.fill(l.strip(), width=79, initial_indent=' ' * 4, subsequent_indent=' ' * 4, replace_whitespace=False) for l in formatted_quote_lines
     ])
+    
+    formatted_quote = formatted_quote.replace('{%', random_ansi_color(time_string))
+    formatted_quote = formatted_quote.replace('%}', '\033[0m')
     
     # generate caption
     if annotated_quote.get('title', None) is not None:
-        caption = ('- \033[3m{t}\033[23m, {a}'.format(t = annotated_quote.get('title', ''), a = annotated_quote.get('author', ''))).rjust(68)
+        caption = ('- \033[3m{t}\033[23m, {a}'.format(t = annotated_quote.get('title', ''), a = annotated_quote.get('author', ''))).rjust(75)
     else:
-        caption = ('- {a}'.format(a = annotated_quote.get('author', 'Unknown'))).rjust(68)
+        caption = ('- {a}'.format(a = annotated_quote.get('author', 'Unknown'))).rjust(75)
     formatted_quote = '\n{q}\n\n{c}'.format(q = formatted_quote, c = caption)
     
     return formatted_quote
