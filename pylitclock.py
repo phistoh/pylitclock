@@ -50,6 +50,7 @@ def format_quote(annotated_quote):
         time_string = annotated_quote.get('quote_last', None)
         formatted_quote = formatted_quote + annotated_quote.get('quote_last', None)
     formatted_quote = formatted_quote.replace('<br/>', '\n')
+    formatted_quote = formatted_quote.replace('<br>', '\n')
     
     # limit line lengths and keep existing new lines
     formatted_quote_lines = formatted_quote.splitlines()
